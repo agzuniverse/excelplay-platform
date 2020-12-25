@@ -14,16 +14,16 @@ services:
       - dalalbull
       - dalalbulldaphne
 
-  # auth1:
-  #   build: ./excelplay-auth/excelplay_auth/.
-  #   depends_on:
-  #     - redis
-  #     - db
-  #   command: bash excelplay-auth/docker_entrypoint.sh
-  #   volumes:
-  #     - .:/excelplay/excelplay_auth
-  #   ports:
-  #     - "8000:8000"
+  auth1:
+    build: ./excelplay-auth/excelplay_auth/.
+    depends_on:
+      - redis
+      - dbauth
+    command: bash excelplay-auth/docker_entrypoint.sh
+    volumes:
+      - .:/excelplay/excelplay_auth
+    ports:
+      - "8000:8000"
 
   dalalbull:
     build: ./excelplay-dalalbull/excelplay_dalalbull/.
@@ -59,14 +59,21 @@ services:
     volumes:
       - .:/excelplay/excelplay_dalalbull
 
-  # db:
-  #   container_name: "db"
-  #   restart: always
-  #   image: postgres:alpine
-  #   expose:
-  #     - "5432"
-  #   volumes:
-  #     - "pgdata:/var/lib/postgresql/data"
+  dbauth:
+    container_name: "dbauth"
+    restart: unless-stopped
+    image: postgres:alpine
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER_AUTH}
+      - POSTGRES_PASSWORD=${DB_PASSWORD_AUTH}
+      - POSTGRES_DB=${DB_NAME_AUTH}
+      - DATABASE_HOST=${DB_HOST_AUTH}
+    volumes:
+      - "pgdataauth:/var/lib/postgresql/data"
 
   db3:
     container_name: "db3"
@@ -93,6 +100,6 @@ services:
       - "redisdata:/data"
 
 volumes:
-  # pgdata:
+  pgdataauth:
   pgdatadbull:
   redisdata:
